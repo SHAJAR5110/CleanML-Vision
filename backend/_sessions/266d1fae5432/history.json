@@ -1,0 +1,56 @@
+[
+  {
+    "op": {
+      "family": "dedup",
+      "strategy": "compute_hashes"
+    },
+    "code": "import imagehash\nfrom PIL import Image\n\ndef compute_phash(img_path, hash_size=8):\n    try:\n        with Image.open(img_path) as img:\n            return str(imagehash.phash(img, hash_size=8))\n    except:\n        return None\n\ndf['perceptual_hash'] = df['path'].apply(lambda p: compute_phash(p, 8))\n",
+    "message": "Computed perceptual hashes for 79 images. \u2014 your dataset is now deduplication-ready."
+  },
+  {
+    "op": {
+      "family": "dedup",
+      "strategy": "remove_duplicates",
+      "params": {
+        "threshold": 5
+      }
+    },
+    "code": "import imagehash\n\ndef find_duplicates(df, threshold=5):\n    hashes = [imagehash.hex_to_hash(h) if pd.notna(h) else None \n              for h in df['perceptual_hash']]\n    keep = []\n    seen = []\n    for i, h in enumerate(hashes):\n        if h is None or not any((h - s) <= 5 for s in seen if s):\n            keep.append(i)\n            if h: seen.append(h)\n    return df.iloc[keep].reset_index(drop=True)\n\ndf = find_duplicates(df, 5)\n",
+    "message": "Removed 14 duplicate images (Hamming distance \u2264 5)."
+  },
+  {
+    "op": {
+      "family": "quality",
+      "strategy": "flag_low_quality",
+      "params": {
+        "blur_threshold": 100.0
+      }
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef compute_blur_score(img_path):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var()\n\ndef check_exposure(img_path):\n    img = cv2.imread(str(img_path))\n    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    mean = gray.mean()\n    if mean < 85: return 'underexposed'\n    if mean > 170: return 'overexposed'\n    return 'ok'\n\ndf['blur_score'] = df['path'].apply(compute_blur_score)\ndf['is_blurry'] = df['blur_score'] < 100.0\ndf['exposure'] = df['path'].apply(check_exposure)\n",
+    "message": "Flagged quality: 2 blurry, 1 underexposed, 3 overexposed."
+  },
+  {
+    "op": {
+      "family": "transforms",
+      "strategy": "convert_color",
+      "params": {
+        "mode": "RGB"
+      }
+    },
+    "code": "from PIL import Image\n\ndef convert_color_mode(img_path, target_mode='RGB'):\n    with Image.open(img_path) as img:\n        if img.mode != target_mode:\n            converted = img.convert(target_mode)\n            converted.save(img_path, format=img.format or 'PNG')\n\n# Convert all images to RGB\nfor img_path in df['path']:\n    convert_color_mode(img_path, 'RGB')\n",
+    "message": "Converted 0 images to RGB mode. \u2014 channels-last, ML-ready."
+  },
+  {
+    "op": {
+      "family": "transforms",
+      "strategy": "resize",
+      "params": {
+        "width": 224,
+        "height": 224,
+        "mode": "pad"
+      }
+    },
+    "code": "from PIL import Image, ImageOps\n\ndef resize_image(img_path, width=224, height=224, mode='pad'):\n    with Image.open(img_path) as img:\n        if mode == 'stretch':\n            resized = img.resize((224, 224), Image.Resampling.LANCZOS)\n        elif mode == 'pad':\n            resized = ImageOps.pad(img, (224, 224), Image.Resampling.LANCZOS)\n        elif mode == 'crop':\n            resized = ImageOps.fit(img, (224, 224), Image.Resampling.LANCZOS)\n        resized.save(img_path, format=img.format or 'PNG')\n\n# Resize all images\nfor img_path in df['path']:\n    resize_image(img_path, 224, 224, 'pad')\n",
+    "message": "Resized 65 images to 224\u00d7224 (pad mode). \u2014 uniform 224\u00d7224 input shape (ImageNet standard, ready for any CNN)."
+  }
+]
