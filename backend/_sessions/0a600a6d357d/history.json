@@ -1,0 +1,16 @@
+[
+  {
+    "op": {
+      "family": "merge",
+      "strategy": "join",
+      "params": {
+        "left_on": "id",
+        "right_on": "id",
+        "how": "inner",
+        "source_label": "other.csv"
+      }
+    },
+    "code": "# Load second CSV: source = 'other.csv'\nother = pd.read_csv('other.csv')\ndf = df.merge(other, how='inner', left_on='id', right_on='id', suffixes=('_x', '_y'))",
+    "message": "Merged with 'other.csv' on id=id (how=inner): 3 -> 2 rows, +1 columns."
+  }
+]

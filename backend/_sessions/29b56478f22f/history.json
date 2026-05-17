@@ -1,0 +1,11 @@
+[
+  {
+    "op": {
+      "column": "x",
+      "family": "missing",
+      "strategy": "drop_column"
+    },
+    "code": "df = df.drop(columns=['x'])",
+    "message": "Dropped column 'x'."
+  }
+]

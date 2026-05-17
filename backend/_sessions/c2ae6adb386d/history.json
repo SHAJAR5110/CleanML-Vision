@@ -1,0 +1,46 @@
+[
+  {
+    "op": {
+      "family": "image_transforms",
+      "strategy": "normalize",
+      "params": {
+        "method": "z-score"
+      }
+    },
+    "code": "import numpy as np\nfrom PIL import Image\n\ndef normalize_image(img_path, method='z-score'):\n    with Image.open(img_path) as img:\n        arr = np.array(img, dtype=np.float32)\n        \n        if method == 'imagenet':\n            arr = arr / 255.0\n            if len(arr.shape) == 3 and arr.shape[2] == 3:\n                mean = np.array([0.485, 0.456, 0.406])\n                std = np.array([0.229, 0.224, 0.225])\n                arr = (arr - mean) / std\n        elif method == '0-1':\n            arr = arr / 255.0\n        elif method == 'z-score':\n            arr = arr / 255.0\n            arr = (arr - arr.mean()) / (arr.std() + 1e-8)\n        \n        # Convert back to uint8 for saving\n        if method == '0-1':\n            arr_uint8 = (arr * 255).astype(np.uint8)\n        else:\n            arr = np.clip(arr, -3, 3)\n            arr = (arr - arr.min()) / (arr.max() - arr.min() + 1e-8)\n            arr_uint8 = (arr * 255).astype(np.uint8)\n        \n        normalized = Image.fromarray(arr_uint8, mode=img.mode)\n        normalized.save(img_path, format=img.format or 'PNG')\n\n# Normalize all images\nfor img_path in df['path']:\n    normalize_image(img_path, 'z-score')\n",
+    "message": "Normalized 79 images using z-score method."
+  },
+  {
+    "op": {
+      "family": "image_transforms",
+      "strategy": "normalize",
+      "params": {
+        "method": "z-score"
+      }
+    },
+    "code": "import numpy as np\nfrom PIL import Image\n\ndef normalize_image(img_path, method='z-score'):\n    with Image.open(img_path) as img:\n        arr = np.array(img, dtype=np.float32)\n        \n        if method == 'imagenet':\n            arr = arr / 255.0\n            if len(arr.shape) == 3 and arr.shape[2] == 3:\n                mean = np.array([0.485, 0.456, 0.406])\n                std = np.array([0.229, 0.224, 0.225])\n                arr = (arr - mean) / std\n        elif method == '0-1':\n            arr = arr / 255.0\n        elif method == 'z-score':\n            arr = arr / 255.0\n            arr = (arr - arr.mean()) / (arr.std() + 1e-8)\n        \n        # Convert back to uint8 for saving\n        if method == '0-1':\n            arr_uint8 = (arr * 255).astype(np.uint8)\n        else:\n            arr = np.clip(arr, -3, 3)\n            arr = (arr - arr.min()) / (arr.max() - arr.min() + 1e-8)\n            arr_uint8 = (arr * 255).astype(np.uint8)\n        \n        normalized = Image.fromarray(arr_uint8, mode=img.mode)\n        normalized.save(img_path, format=img.format or 'PNG')\n\n# Normalize all images\nfor img_path in df['path']:\n    normalize_image(img_path, 'z-score')\n",
+    "message": "Normalized 79 images using z-score method."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_blurry",
+      "params": {
+        "threshold": 100
+      }
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef is_blurry(img_path, threshold=100.0):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var() < threshold\n\n# Remove blurry images\ndf = df[~df['path'].apply(lambda p: is_blurry(p, 100.0))].reset_index(drop=True)\n",
+    "message": "Removed 0 blurry images (Laplacian variance < 100.0)."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_blurry",
+      "params": {
+        "threshold": 50
+      }
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef is_blurry(img_path, threshold=50.0):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var() < threshold\n\n# Remove blurry images\ndf = df[~df['path'].apply(lambda p: is_blurry(p, 50.0))].reset_index(drop=True)\n",
+    "message": "Removed 0 blurry images (Laplacian variance < 50.0)."
+  }
+]

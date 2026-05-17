@@ -1,0 +1,143 @@
+[
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_constants"
+    },
+    "code": "_constants = [c for c in df.columns if df[c].nunique(dropna=False) <= 1]\ndf = df.drop(columns=_constants)",
+    "message": "Dropped 1 constant column(s): ['const']."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "id"
+    },
+    "code": "df = df.drop(columns=['id'])",
+    "message": "Dropped column 'id'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "mode",
+      "column": "name"
+    },
+    "code": "df['name'] = df['name'].fillna(df['name'].mode().iloc[0])",
+    "message": "Filled 1 missing in 'name' with mode ('Alice')."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "name"
+    },
+    "code": "df = pd.concat([df.drop(columns=['name']), pd.get_dummies(df['name'], prefix='name', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'name' \u2192 9 columns."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "mode",
+      "column": "gender"
+    },
+    "code": "df['gender'] = df['gender'].fillna(df['gender'].mode().iloc[0])",
+    "message": "Filled 1 missing in 'gender' with mode ('Male')."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "gender"
+    },
+    "code": "df = pd.concat([df.drop(columns=['gender']), pd.get_dummies(df['gender'], prefix='gender', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'gender' \u2192 8 columns."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "median",
+      "column": "age"
+    },
+    "code": "df['age'] = pd.to_numeric(df['age'], errors='coerce').astype(float).fillna(df['age'].median())",
+    "message": "Filled 1 missing in 'age' with median (28)."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "age"
+    },
+    "code": "_q1, _q3 = df['age'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['age'] = df['age'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 2 IQR outliers in 'age' at [19.5, 37.5]."
+  },
+  {
+    "op": {
+      "family": "scalers",
+      "strategy": "log",
+      "column": "age"
+    },
+    "code": "_shift = max(0.0, -df['age'].min() + 1.0) if df['age'].min() <= 0 else 0.0\ndf['age'] = np.log1p(df['age'] + _shift)",
+    "message": "Log-transformed 'age' (shift=0)."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_numeric",
+      "column": "salary"
+    },
+    "code": "df['salary'] = pd.to_numeric(df['salary'].astype('string').str.replace(r'[$,%\\s]', '', regex=True), errors='coerce')",
+    "message": "Coerced 'salary' to numeric (stripped currency/symbols; 0 new NaN)."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "median",
+      "column": "salary"
+    },
+    "code": "df['salary'] = pd.to_numeric(df['salary'], errors='coerce').astype(float).fillna(df['salary'].median())",
+    "message": "Filled 1 missing in 'salary' with median (2800)."
+  },
+  {
+    "op": {
+      "family": "datetime",
+      "strategy": "parse",
+      "column": "joined"
+    },
+    "code": "df['joined'] = pd.to_datetime(df['joined'], errors='coerce')",
+    "message": "Parsed 'joined' as datetime."
+  },
+  {
+    "op": {
+      "family": "datetime",
+      "strategy": "extract",
+      "column": "joined",
+      "params": {
+        "parts": [
+          "year",
+          "month",
+          "weekday"
+        ]
+      }
+    },
+    "code": "_s = pd.to_datetime(df['joined'], errors='coerce')\ndf['joined_year'] = _s.dt.year\ndf['joined_month'] = _s.dt.month\ndf['joined_weekday'] = _s.dt.weekday",
+    "message": "Extracted ['joined_year', 'joined_month', 'joined_weekday'] from 'joined'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "joined"
+    },
+    "code": "df = df.drop(columns=['joined'])",
+    "message": "Dropped column 'joined'."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "category"
+    },
+    "code": "df = pd.concat([df.drop(columns=['category']), pd.get_dummies(df['category'], prefix='category', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'category' \u2192 3 columns."
+  }
+]

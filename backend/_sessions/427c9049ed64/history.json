@@ -1,0 +1,15 @@
+[
+  {
+    "op": {
+      "family": "splitter",
+      "strategy": "split",
+      "params": {
+        "target": "y",
+        "test_size": 0.2,
+        "session_dir": "C:\\Users\\HP\\Desktop\\H\\ML tool\\backend\\_sessions\\427c9049ed64"
+      }
+    },
+    "code": "from sklearn.model_selection import train_test_split\ntrain_df, test_df = train_test_split(\n    df, test_size=0.2, random_state=42,\n    stratify=df['y'],\n)",
+    "message": "Train/test split: 40 train (80%) \u00b7 10 test (20%) stratified on 'y'."
+  }
+]

@@ -1,0 +1,531 @@
+[
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_rows"
+    },
+    "code": "df = df.drop_duplicates().reset_index(drop=True)",
+    "message": "Dropped 1 duplicate rows."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "total_bill"
+    },
+    "code": "_q1, _q3 = df['total_bill'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['total_bill'].between(_lo, _hi) | df['total_bill'].isna()].reset_index(drop=True)",
+    "message": "Removed 9 IQR outliers from 'total_bill' (bounds [-2.812, 40.37])."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "tip"
+    },
+    "code": "_q1, _q3 = df['tip'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['tip'].between(_lo, _hi) | df['tip'].isna()].reset_index(drop=True)",
+    "message": "Removed 7 IQR outliers from 'tip' (bounds [-0.25, 5.75])."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "sex"
+    },
+    "code": "df = pd.concat([df.drop(columns=['sex']), pd.get_dummies(df['sex'], prefix='sex', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'sex' \u2192 2 columns."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "smoker"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['smoker'] = df['smoker'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'smoker' to boolean."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "day"
+    },
+    "code": "df = pd.concat([df.drop(columns=['day']), pd.get_dummies(df['day'], prefix='day', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'day' \u2192 4 columns."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "time"
+    },
+    "code": "df = pd.concat([df.drop(columns=['time']), pd.get_dummies(df['time'], prefix='time', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'time' \u2192 2 columns."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "size"
+    },
+    "code": "_q1, _q3 = df['size'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['size'].between(_lo, _hi) | df['size'].isna()].reset_index(drop=True)",
+    "message": "Removed 6 IQR outliers from 'size' (bounds [0.5, 4.5])."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "total_bill"
+    },
+    "code": "_q1, _q3 = df['total_bill'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['total_bill'].between(_lo, _hi) | df['total_bill'].isna()].reset_index(drop=True)",
+    "message": "Removed 5 IQR outliers from 'total_bill' (bounds [-0.605, 35.76])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "smoker"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['smoker'] = df['smoker'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'smoker' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Female'] = df['sex_Female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Male'] = df['sex_Male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Fri"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Fri'] = df['day_Fri'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Fri' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sat"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sat'] = df['day_Sat'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sat' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sun"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sun'] = df['day_Sun'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sun' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Thur"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Thur'] = df['day_Thur'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Thur' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Dinner"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Dinner'] = df['time_Dinner'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Dinner' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Lunch"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Lunch'] = df['time_Lunch'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Lunch' to boolean."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "total_bill"
+    },
+    "code": "_q1, _q3 = df['total_bill'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['total_bill'].between(_lo, _hi) | df['total_bill'].isna()].reset_index(drop=True)",
+    "message": "Removed 5 IQR outliers from 'total_bill' (bounds [0.57, 33.65])."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "tip"
+    },
+    "code": "_q1, _q3 = df['tip'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['tip'].between(_lo, _hi) | df['tip'].isna()].reset_index(drop=True)",
+    "message": "Removed 2 IQR outliers from 'tip' (bounds [0.005, 5.325])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "smoker"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['smoker'] = df['smoker'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'smoker' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Female'] = df['sex_Female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Male'] = df['sex_Male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Fri"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Fri'] = df['day_Fri'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Fri' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sat"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sat'] = df['day_Sat'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sat' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sun"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sun'] = df['day_Sun'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sun' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Thur"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Thur'] = df['day_Thur'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Thur' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Dinner"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Dinner'] = df['time_Dinner'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Dinner' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Lunch"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Lunch'] = df['time_Lunch'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Lunch' to boolean."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "total_bill"
+    },
+    "code": "_q1, _q3 = df['total_bill'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['total_bill'].between(_lo, _hi) | df['total_bill'].isna()].reset_index(drop=True)",
+    "message": "Removed 2 IQR outliers from 'total_bill' (bounds [0.76, 32.76])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "smoker"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['smoker'] = df['smoker'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'smoker' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Female'] = df['sex_Female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Male'] = df['sex_Male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Fri"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Fri'] = df['day_Fri'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Fri' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sat"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sat'] = df['day_Sat'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sat' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sun"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sun'] = df['day_Sun'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sun' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Thur"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Thur'] = df['day_Thur'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Thur' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Dinner"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Dinner'] = df['time_Dinner'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Dinner' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Lunch"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Lunch'] = df['time_Lunch'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Lunch' to boolean."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "total_bill"
+    },
+    "code": "_q1, _q3 = df['total_bill'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['total_bill'].between(_lo, _hi) | df['total_bill'].isna()].reset_index(drop=True)",
+    "message": "Removed 1 IQR outliers from 'total_bill' (bounds [0.87, 32.55])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "smoker"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['smoker'] = df['smoker'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'smoker' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Female'] = df['sex_Female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Male'] = df['sex_Male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Fri"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Fri'] = df['day_Fri'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Fri' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sat"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sat'] = df['day_Sat'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sat' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sun"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sun'] = df['day_Sun'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sun' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Thur"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Thur'] = df['day_Thur'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Thur' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Dinner"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Dinner'] = df['time_Dinner'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Dinner' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Lunch"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Lunch'] = df['time_Lunch'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Lunch' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "smoker"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['smoker'] = df['smoker'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'smoker' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Female'] = df['sex_Female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "sex_Male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['sex_Male'] = df['sex_Male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'sex_Male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Fri"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Fri'] = df['day_Fri'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Fri' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sat"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sat'] = df['day_Sat'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sat' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Sun"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Sun'] = df['day_Sun'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Sun' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "day_Thur"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['day_Thur'] = df['day_Thur'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'day_Thur' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Dinner"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Dinner'] = df['time_Dinner'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Dinner' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "time_Lunch"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['time_Lunch'] = df['time_Lunch'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'time_Lunch' to boolean."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "fill_all_smart"
+    },
+    "code": "# Standardize NaN tokens then smart-fill every column\n_nan_tokens = ['', ' ', '#n/a', '#null!', '(null)', '-', '--', '.', '?', 'missing', 'n/a', 'na', 'nan', 'none', 'null', 'unknown']\nfor _c in df.columns:\n    if df[_c].dtype == object or pd.api.types.is_string_dtype(df[_c]):\n        _norm = df[_c].astype(str).str.strip().str.lower()\n        df.loc[_norm.isin(_nan_tokens), _c] = None",
+    "message": "Smart-filled 0 missing cells across all columns."
+  }
+]

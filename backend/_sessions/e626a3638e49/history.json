@@ -1,0 +1,10 @@
+[
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "fill_all_smart"
+    },
+    "code": "# Standardize NaN tokens then smart-fill every column\n_nan_tokens = ['', ' ', '#n/a', '#null!', '(null)', '-', '--', '.', '?', 'missing', 'n/a', 'na', 'nan', 'none', 'null', 'unknown']\nfor _c in df.columns:\n    if df[_c].dtype == object or pd.api.types.is_string_dtype(df[_c]):\n        _norm = df[_c].astype(str).str.strip().str.lower()\n        df.loc[_norm.isin(_nan_tokens), _c] = None\ndf['name'] = df['name'].fillna(df['name'].mode().iloc[0] if len(df['name'].mode()) else 'Unknown')\ndf['age'] = df['age'].fillna(df['age'].median())\ndf['salary'] = df['salary'].fillna(df['salary'].median())\ndf['city'] = df['city'].fillna(df['city'].mode().iloc[0] if len(df['city'].mode()) else 'Unknown')\ndf['joined'] = df['joined'].fillna(df['joined'].mode().iloc[0] if len(df['joined'].mode()) else 'Unknown')",
+    "message": "Smart-filled 11 missing cells across all columns."
+  }
+]

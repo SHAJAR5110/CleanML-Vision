@@ -1,0 +1,502 @@
+[
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "fill_all_smart"
+    },
+    "code": "# Standardize NaN tokens then smart-fill every column\n_nan_tokens = ['', ' ', '#n/a', '#null!', '(null)', '-', '--', '.', '?', 'missing', 'n/a', 'na', 'nan', 'none', 'null', 'unknown']\nfor _c in df.columns:\n    if df[_c].dtype == object or pd.api.types.is_string_dtype(df[_c]):\n        _norm = df[_c].astype(str).str.strip().str.lower()\n        df.loc[_norm.isin(_nan_tokens), _c] = None\ndf['Peak'] = df['Peak'].fillna(df['Peak'].mode().iloc[0] if len(df['Peak'].mode()) else 'Unknown')\ndf['All Time Peak'] = df['All Time Peak'].fillna(df['All Time Peak'].mode().iloc[0] if len(df['All Time Peak'].mode()) else 'Unknown')",
+    "message": "Smart-filled 25 missing cells across all columns."
+  },
+  {
+    "op": {
+      "column": "Tour title",
+      "family": "missing",
+      "strategy": "drop_column"
+    },
+    "code": "df = df.drop(columns=['Tour title'])",
+    "message": "Dropped column 'Tour title'."
+  },
+  {
+    "op": {
+      "column": "Ref.",
+      "family": "missing",
+      "strategy": "drop_column"
+    },
+    "code": "df = df.drop(columns=['Ref.'])",
+    "message": "Dropped column 'Ref.'."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Peak"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Peak']), pd.get_dummies(df['Peak'], prefix='Peak', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Peak' \u2192 7 columns."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "All Time Peak"
+    },
+    "code": "df = pd.concat([df.drop(columns=['All Time Peak']), pd.get_dummies(df['All Time Peak'], prefix='All Time Peak', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'All Time Peak' \u2192 6 columns."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_numeric",
+      "column": "Actual\u00a0gross"
+    },
+    "code": "df['Actual\u00a0gross'] = pd.to_numeric(df['Actual\u00a0gross'].astype('string').str.replace(r'[$,%\\s]', '', regex=True), errors='coerce')",
+    "message": "Coerced 'Actual\u00a0gross' to numeric (stripped currency/symbols; 2 new NaN)."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_numeric",
+      "column": "Adjusted\u00a0gross (in 2022 dollars)"
+    },
+    "code": "df['Adjusted\u00a0gross (in 2022 dollars)'] = pd.to_numeric(df['Adjusted\u00a0gross (in 2022 dollars)'].astype('string').str.replace(r'[$,%\\s]', '', regex=True), errors='coerce')",
+    "message": "Coerced 'Adjusted\u00a0gross (in 2022 dollars)' to numeric (stripped currency/symbols; 0 new NaN)."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Artist"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Artist']), pd.get_dummies(df['Artist'], prefix='Artist', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Artist' \u2192 9 columns."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Year(s)"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Year(s)']), pd.get_dummies(df['Year(s)'], prefix='Year(s)', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Year(s)' \u2192 16 columns."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "Shows"
+    },
+    "code": "_q1, _q3 = df['Shows'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['Shows'].between(_lo, _hi) | df['Shows'].isna()].reset_index(drop=True)",
+    "message": "Removed 1 IQR outliers from 'Shows' (bounds [-54.25, 247.8])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_numeric",
+      "column": "Average gross"
+    },
+    "code": "df['Average gross'] = pd.to_numeric(df['Average gross'].astype('string').str.replace(r'[$,%\\s]', '', regex=True), errors='coerce')",
+    "message": "Coerced 'Average gross' to numeric (stripped currency/symbols; 0 new NaN)."
+  },
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_constants"
+    },
+    "code": "_constants = [c for c in df.columns if df[c].nunique(dropna=False) <= 1]\ndf = df.drop(columns=_constants)",
+    "message": "Dropped 3 constant column(s): ['Peak_1[20]', 'Artist_Cher', 'Year(s)_2002\u20132005']."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "median",
+      "column": "Actual\u00a0gross"
+    },
+    "code": "df['Actual\u00a0gross'] = pd.to_numeric(df['Actual\u00a0gross'], errors='coerce').astype(float).fillna(df['Actual\u00a0gross'].median())",
+    "message": "Filled 2 missing in 'Actual\u00a0gross' with median (2.561e+08)."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "Actual\u00a0gross"
+    },
+    "code": "_q1, _q3 = df['Actual\u00a0gross'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Actual\u00a0gross'] = df['Actual\u00a0gross'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 2 IQR outliers in 'Actual\u00a0gross' at [9.375e+06, 5.15e+08]."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "Adjusted\u00a0gross (in 2022 dollars)"
+    },
+    "code": "_q1, _q3 = df['Adjusted\u00a0gross (in 2022 dollars)'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Adjusted\u00a0gross (in 2022 dollars)'] = df['Adjusted\u00a0gross (in 2022 dollars)'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 1 IQR outliers in 'Adjusted\u00a0gross (in 2022 dollars)' at [5.269e+06, 6.303e+08]."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "Average gross"
+    },
+    "code": "_q1, _q3 = df['Average gross'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Average gross'] = df['Average gross'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 2 IQR outliers in 'Average gross' at [-3.208e+06, 9.974e+06]."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Peak_1"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Peak_1'] = df['Peak_1'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Peak_1' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Peak_1[4]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Peak_1[4]'] = df['Peak_1[4]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Peak_1[4]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Peak_2[10]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Peak_2[10]'] = df['Peak_2[10]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Peak_2[10]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Peak_2[4]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Peak_2[4]'] = df['Peak_2[4]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Peak_2[4]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Peak_2[7]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Peak_2[7]'] = df['Peak_2[7]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Peak_2[7]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Peak_2[c]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Peak_2[c]'] = df['Peak_2[c]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Peak_2[c]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "All Time Peak_10[7]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['All Time Peak_10[7]'] = df['All Time Peak_10[7]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'All Time Peak_10[7]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "All Time Peak_10[9]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['All Time Peak_10[9]'] = df['All Time Peak_10[9]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'All Time Peak_10[9]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "All Time Peak_14[17]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['All Time Peak_14[17]'] = df['All Time Peak_14[17]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'All Time Peak_14[17]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "All Time Peak_2"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['All Time Peak_2'] = df['All Time Peak_2'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'All Time Peak_2' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "All Time Peak_2[5]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['All Time Peak_2[5]'] = df['All Time Peak_2[5]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'All Time Peak_2[5]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "All Time Peak_7[2]"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['All Time Peak_7[2]'] = df['All Time Peak_7[2]'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'All Time Peak_7[2]' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Adele"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Adele'] = df['Artist_Adele'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Adele' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Beyonc\u00e9"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Beyonc\u00e9'] = df['Artist_Beyonc\u00e9'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Beyonc\u00e9' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Celine Dion"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Celine Dion'] = df['Artist_Celine Dion'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Celine Dion' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Katy Perry"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Katy Perry'] = df['Artist_Katy Perry'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Katy Perry' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Lady Gaga"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Lady Gaga'] = df['Artist_Lady Gaga'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Lady Gaga' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Madonna"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Madonna'] = df['Artist_Madonna'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Madonna' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Pink"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Pink'] = df['Artist_Pink'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Pink' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Artist_Taylor Swift"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Artist_Taylor Swift'] = df['Artist_Taylor Swift'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Artist_Taylor Swift' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2006"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2006'] = df['Year(s)_2006'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2006' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2008\u20132009"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2008\u20132009'] = df['Year(s)_2008\u20132009'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2008\u20132009' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2009\u20132011"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2009\u20132011'] = df['Year(s)_2009\u20132011'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2009\u20132011' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2012"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2012'] = df['Year(s)_2012'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2012' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2012\u20132013"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2012\u20132013'] = df['Year(s)_2012\u20132013'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2012\u20132013' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2013\u20132014"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2013\u20132014'] = df['Year(s)_2013\u20132014'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2013\u20132014' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2014\u20132015"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2014\u20132015'] = df['Year(s)_2014\u20132015'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2014\u20132015' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2015"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2015'] = df['Year(s)_2015'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2015' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2015\u20132016"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2015\u20132016'] = df['Year(s)_2015\u20132016'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2015\u20132016' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2016"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2016'] = df['Year(s)_2016'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2016' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2016\u20132017"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2016\u20132017'] = df['Year(s)_2016\u20132017'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2016\u20132017' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2018"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2018'] = df['Year(s)_2018'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2018' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2018\u20132019"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2018\u20132019'] = df['Year(s)_2018\u20132019'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2018\u20132019' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2023"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2023'] = df['Year(s)_2023'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2023' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Year(s)_2023\u20132024"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Year(s)_2023\u20132024'] = df['Year(s)_2023\u20132024'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Year(s)_2023\u20132024' to boolean."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "Peak_2[10]",
+      "params": {}
+    },
+    "code": "df = df.drop(columns=['Peak_2[10]'])",
+    "message": "Dropped column 'Peak_2[10]'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "Shows",
+      "params": {}
+    },
+    "code": "df = df.drop(columns=['Shows'])",
+    "message": "Dropped column 'Shows'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "Average gross",
+      "params": {}
+    },
+    "code": "df = df.drop(columns=['Average gross'])",
+    "message": "Dropped column 'Average gross'."
+  },
+  {
+    "op": {
+      "family": "reduce",
+      "strategy": "select_k_best",
+      "params": {
+        "target": "Artist_Beyonc\u00e9",
+        "k": 10,
+        "score_func": "f_classif"
+      }
+    },
+    "code": "from sklearn.feature_selection import SelectKBest, f_classif\n_num = ['Rank', 'Actual\\xa0gross', 'Adjusted\\xa0gross (in 2022 dollars)', 'Peak_1', 'Peak_1[4]', 'Peak_2[4]', 'Peak_2[7]', 'Peak_2[c]', 'All Time Peak_10[7]', 'All Time Peak_10[9]', 'All Time Peak_14[17]', 'All Time Peak_2', 'All Time Peak_2[5]', 'All Time Peak_7[2]', 'Artist_Adele', 'Artist_Celine Dion', 'Artist_Katy Perry', 'Artist_Lady Gaga', 'Artist_Madonna', 'Artist_Pink', 'Artist_Taylor Swift', 'Year(s)_2006', 'Year(s)_2008\u20132009', 'Year(s)_2009\u20132011', 'Year(s)_2012', 'Year(s)_2012\u20132013', 'Year(s)_2013\u20132014', 'Year(s)_2014\u20132015', 'Year(s)_2015', 'Year(s)_2015\u20132016', 'Year(s)_2016', 'Year(s)_2016\u20132017', 'Year(s)_2018', 'Year(s)_2018\u20132019', 'Year(s)_2023', 'Year(s)_2023\u20132024']\n_X, _y = df[_num].fillna(df[_num].median()), df['Artist_Beyonc\u00e9']\n_sel = SelectKBest(score_func=f_classif, k=10).fit(_X, _y)\n_keep = [c for c, m in zip(_num, _sel.get_support()) if m]\ndf = df.drop(columns=[c for c in _num if c not in _keep])",
+    "message": "Kept top 10 features by f_classif: ['Rank', 'Actual\\xa0gross', 'Peak_1', 'All Time Peak_7[2]', 'Artist_Madonna'].... Dropped 26."
+  }
+]

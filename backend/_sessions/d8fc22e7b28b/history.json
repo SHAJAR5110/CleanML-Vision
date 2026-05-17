@@ -1,0 +1,42 @@
+[
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_corrupt",
+      "params": {}
+    },
+    "code": "from PIL import Image\n\ndef is_valid(img_path):\n    try:\n        with Image.open(img_path) as img:\n            img.verify()\n        return True\n    except:\n        return False\n\n# Remove corrupt images\ndf = df[df['path'].apply(is_valid)].reset_index(drop=True)\n",
+    "message": "Removed 79 corrupt/unreadable images."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "flag_low_quality",
+      "params": {}
+    },
+    "code": "",
+    "message": "No images to process."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_blurry",
+      "params": {
+        "threshold": 95
+      }
+    },
+    "code": "",
+    "message": "No images to process."
+  },
+  {
+    "op": {
+      "family": "image_augment",
+      "strategy": "brightness",
+      "params": {
+        "factor": 1.2
+      }
+    },
+    "code": "from PIL import Image, ImageEnhance\n\ndef brightness_augment(img_path, factor=1.2):\n    with Image.open(img_path) as img:\n        enhancer = ImageEnhance.Brightness(img)\n        brightened = enhancer.enhance(1.2)\n        new_path = img_path.parent / f\"{img_path.stem}_aug_bright1.2{img_path.suffix}\"\n        brightened.save(new_path, format=img.format or 'PNG')\n        return new_path\n\n# Augment all images\nfor img_path in df['path']:\n    brightness_augment(img_path, 1.2)\n",
+    "message": "Created 0 brightness-adjusted augmentations (factor=1.2)."
+  }
+]

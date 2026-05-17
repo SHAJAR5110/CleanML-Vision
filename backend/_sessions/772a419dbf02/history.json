@@ -1,0 +1,13 @@
+[
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_blurry",
+      "params": {
+        "threshold": 100
+      }
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef is_blurry(img_path, threshold=100.0):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var() < threshold\n\n# Remove blurry images\ndf = df[~df['path'].apply(lambda p: is_blurry(p, 100.0))].reset_index(drop=True)\n",
+    "message": "Removed 0 blurry images (Laplacian variance < 100.0)."
+  }
+]

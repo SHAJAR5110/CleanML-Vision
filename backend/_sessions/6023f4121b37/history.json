@@ -1,0 +1,16 @@
+[
+  {
+    "op": {
+      "family": "merge",
+      "strategy": "join",
+      "params": {
+        "left_on": "customer_id",
+        "right_on": "cust_id",
+        "how": "outer",
+        "source_label": "orders.csv"
+      }
+    },
+    "code": "# Load second CSV: source = 'orders.csv'\nother = pd.read_csv('orders.csv')\ndf = df.merge(other, how='outer', left_on='customer_id', right_on='cust_id', suffixes=('_x', '_y'))",
+    "message": "Merged with 'orders.csv' on customer_id=cust_id (how=outer): 5 -> 8 rows, +4 columns."
+  }
+]

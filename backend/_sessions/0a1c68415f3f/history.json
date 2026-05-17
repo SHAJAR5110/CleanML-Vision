@@ -1,0 +1,28 @@
+[
+  {
+    "op": {
+      "family": "feature_eng",
+      "strategy": "create",
+      "params": {
+        "name": "Avg gross",
+        "formula": "(a + b) / 2"
+      }
+    },
+    "code": "",
+    "message": "formula error: name 'a' is not defined"
+  },
+  {
+    "op": {
+      "family": "splitter",
+      "strategy": "split",
+      "params": {
+        "target": null,
+        "test_size": 0.1,
+        "random_state": 42,
+        "session_dir": "C:\\Users\\HP\\Desktop\\H\\ML tool\\backend\\_sessions\\0a1c68415f3f"
+      }
+    },
+    "code": "from sklearn.model_selection import train_test_split\ntrain_df, test_df = train_test_split(\n    df, test_size=0.1, random_state=42,\n    stratify=None,\n)",
+    "message": "Train/test split: 18 train (90%) \u00b7 2 test (10%) (random)."
+  }
+]

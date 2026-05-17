@@ -1,0 +1,20 @@
+[
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Country"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Country']), pd.get_dummies(df['Country'], prefix='Country', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Country' \u2192 3 columns."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Purchased"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Purchased'] = df['Purchased'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Purchased' to boolean."
+  }
+]

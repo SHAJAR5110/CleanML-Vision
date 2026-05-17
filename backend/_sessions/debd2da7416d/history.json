@@ -1,0 +1,189 @@
+[
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_high_missing",
+      "params": {
+        "threshold": 0.7
+      }
+    },
+    "code": "_drops = [c for c in df.columns if df[c].isna().mean() > 0.7]\ndf = df.drop(columns=_drops)",
+    "message": "Dropped 1 cols with >70% missing: ['Cabin']."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "PassengerId"
+    },
+    "code": "df = df.drop(columns=['PassengerId'])",
+    "message": "Dropped column 'PassengerId'."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Survived"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Survived'] = df['Survived'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Survived' to boolean."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "Name"
+    },
+    "code": "df = df.drop(columns=['Name'])",
+    "message": "Dropped column 'Name'."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Sex"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Sex']), pd.get_dummies(df['Sex'], prefix='Sex', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Sex' \u2192 2 columns."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "median",
+      "column": "Age"
+    },
+    "code": "df['Age'] = pd.to_numeric(df['Age'], errors='coerce').fillna(df['Age'].median())",
+    "message": "Filled 177 missing in 'Age' with median (28)."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "Age"
+    },
+    "code": "_q1, _q3 = df['Age'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['Age'].between(_lo, _hi) | df['Age'].isna()].reset_index(drop=True)",
+    "message": "Removed 66 IQR outliers from 'Age' (bounds [2.5, 54.5])."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "SibSp"
+    },
+    "code": "_q1, _q3 = df['SibSp'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['SibSp'] = df['SibSp'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 39 IQR outliers in 'SibSp' at [-1.5, 2.5]."
+  },
+  {
+    "op": {
+      "family": "scalers",
+      "strategy": "log",
+      "column": "SibSp"
+    },
+    "code": "_shift = max(0.0, -df['SibSp'].min() + 1.0) if df['SibSp'].min() <= 0 else 0.0\ndf['SibSp'] = np.log1p(df['SibSp'] + _shift)",
+    "message": "Log-transformed 'SibSp' (shift=1)."
+  },
+  {
+    "op": {
+      "family": "scalers",
+      "strategy": "log",
+      "column": "Parch"
+    },
+    "code": "_shift = max(0.0, -df['Parch'].min() + 1.0) if df['Parch'].min() <= 0 else 0.0\ndf['Parch'] = np.log1p(df['Parch'] + _shift)",
+    "message": "Log-transformed 'Parch' (shift=1)."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "Ticket"
+    },
+    "code": "df = df.drop(columns=['Ticket'])",
+    "message": "Dropped column 'Ticket'."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "Fare"
+    },
+    "code": "_q1, _q3 = df['Fare'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Fare'] = df['Fare'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 107 IQR outliers in 'Fare' at [-25.37, 63.33]."
+  },
+  {
+    "op": {
+      "family": "scalers",
+      "strategy": "log",
+      "column": "Fare"
+    },
+    "code": "_shift = max(0.0, -df['Fare'].min() + 1.0) if df['Fare'].min() <= 0 else 0.0\ndf['Fare'] = np.log1p(df['Fare'] + _shift)",
+    "message": "Log-transformed 'Fare' (shift=1)."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "mode",
+      "column": "Embarked"
+    },
+    "code": "df['Embarked'] = df['Embarked'].fillna(df['Embarked'].mode().iloc[0])",
+    "message": "Filled 1 missing in 'Embarked' with mode ('S')."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Embarked"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Embarked']), pd.get_dummies(df['Embarked'], prefix='Embarked', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Embarked' \u2192 3 columns."
+  },
+  {
+    "op": {
+      "family": "feature_eng",
+      "strategy": "create",
+      "params": {
+        "name": "family_size",
+        "formula": "SibSp + Parch"
+      }
+    },
+    "code": "df = df.eval('`family_size` = SibSp + Parch')",
+    "message": "Created 'family_size' = SibSp + Parch  (825 valid values)."
+  },
+  {
+    "op": {
+      "family": "reduce",
+      "strategy": "select_k_best",
+      "params": {
+        "target": "Survived",
+        "k": 5,
+        "score_func": "f_classif"
+      }
+    },
+    "code": "from sklearn.feature_selection import SelectKBest, f_classif\n_num = ['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Sex_female', 'Sex_male', 'Embarked_C', 'Embarked_Q', 'Embarked_S', 'family_size']\n_X, _y = df[_num].fillna(df[_num].median()), df['Survived']\n_sel = SelectKBest(score_func=f_classif, k=5).fit(_X, _y)\n_keep = [c for c, m in zip(_num, _sel.get_support()) if m]\ndf = df.drop(columns=[c for c in _num if c not in _keep])",
+    "message": "Kept top 5 features by f_classif: ['Pclass', 'Fare', 'Sex_female', 'Sex_male', 'Embarked_C']. Dropped 6."
+  },
+  {
+    "op": {
+      "family": "balance",
+      "strategy": "smote",
+      "params": {
+        "target": "Survived"
+      }
+    },
+    "code": "from imblearn.over_sampling import SMOTE\n_features = [c for c in df.columns if c != 'Survived']\n_X, _y = df[_features].fillna(df[_features].median()), df['Survived']\n_Xr, _yr = SMOTE(random_state=42).fit_resample(_X, _y)\ndf = pd.concat([_Xr, _yr.rename('Survived').reset_index(drop=True)], axis=1)",
+    "message": "SMOTE balanced 'Survived': {'False': 511, 'True': 314} -> {'False': 511, 'True': 511}."
+  },
+  {
+    "op": {
+      "family": "splitter",
+      "strategy": "split",
+      "params": {
+        "target": "Survived",
+        "test_size": 0.2,
+        "random_state": 42,
+        "session_dir": "C:\\Users\\HP\\Desktop\\H\\ML tool\\backend\\_sessions\\debd2da7416d"
+      }
+    },
+    "code": "from sklearn.model_selection import train_test_split\ntrain_df, test_df = train_test_split(\n    df, test_size=0.2, random_state=42,\n    stratify=df['Survived'],\n)",
+    "message": "Train/test split: 817 train (80%) \u00b7 205 test (20%) stratified on 'Survived'."
+  }
+]

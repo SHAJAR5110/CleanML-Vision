@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CleanML — Intelligent Data Cleaner</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <span class="brand-name">CleanML</span>
+      <span class="brand-sub">intelligent data cleaning &amp; preprocessing</span>
+    </div>
+    <nav class="steps" id="steps">
+      <span class="step active" data-step="upload">1 · Upload</span>
+      <span class="step" data-step="profile">2 · Profile</span>
+      <span class="step" data-step="clean">3 · Clean</span>
+      <span class="step" data-step="compare">4 · Compare</span>
+      <span class="step" data-step="export">5 · Export</span>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============== UPLOAD SCREEN ============== -->
+    <section id="screen-upload" class="screen active">
+      <div class="hero">
+        <h1>Clean any dataset. <span class="grad">Instantly.</span></h1>
+        <p class="lead">
+          Drop a CSV or paste a URL. CleanML auto-profiles your data, detects every
+          quality issue, fixes them with one click, and gives you back a clean dataset
+          plus a reproducible Python notebook.
+        </p>
+      </div>
+
+      <div class="upload-grid">
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="fileInput" accept=".csv" hidden />
+          <div class="dz-icon">⬆</div>
+          <div class="dz-title">Drop your CSV here</div>
+          <div class="dz-sub">or <button class="link" id="browseBtn">browse files</button></div>
+          <div class="dz-hint">CSV up to 1 GB · or a ZIP of images (with optional labels.csv)</div>
+        </div>
+
+        <div class="or-split"><span>or</span></div>
+
+        <div class="url-panel">
+          <label class="url-label">Load from URL</label>
+          <input type="url" id="urlInput" placeholder="https://example.com/dataset.csv" />
+          <button class="btn primary" id="urlBtn">Load CSV</button>
+          <div class="samples">
+            <span class="samples-label">Try a sample:</span>
+            <button class="chip" data-sample="https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv">Titanic</button>
+            <button class="chip" data-sample="https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv">Iris</button>
+            <button class="chip" data-sample="https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv">Tips</button>
+            <button class="chip" data-sample="/samples/demo_images.zip" title="80 messy images with duplicates, blurry, mixed dimensions + labels.csv">🖼 Demo Images</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feat"><b>Auto-profile</b><span>Types, missing %, outliers, skewness, cardinality — all detected.</span></div>
+        <div class="feat"><b>Magic Clean</b><span>One click. Smart per-column strategies. Done.</span></div>
+        <div class="feat"><b>Reproducible</b><span>Download a Python notebook of every transformation.</span></div>
+        <div class="feat"><b>Visual</b><span>Interactive Plotly charts before &amp; after.</span></div>
+      </div>
+
+      <div id="uploadProgress" class="upload-progress" hidden>
+        <div id="progressLabel" class="progress-label">Uploading…</div>
+        <div class="progress-bar-container">
+          <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+        </div>
+        <div id="progressText" class="progress-text">0%</div>
+      </div>
+
+      <div id="uploadError" class="error" hidden></div>
+    </section>
+
+    <!-- ============== PROFILE / DASHBOARD ============== -->
+    <section id="screen-profile" class="screen">
+      <div class="dash-head">
+        <div>
+          <h2 id="dashTitle">Dataset profile</h2>
+          <div id="dashMeta" class="muted"></div>
+        </div>
+        <div class="dash-actions">
+          <button class="btn ghost" id="backToUpload">← New dataset</button>
+          <button class="btn ghost" id="undoBtn" disabled>↶ Undo</button>
+          <button class="btn ghost" id="resetBtn" disabled>⟲ Reset</button>
+          <button class="btn ghost" id="compareBtn" disabled>↔ Compare</button>
+          <button class="btn" id="validateBtn">✓ Validate</button>
+          <button class="btn" id="fixNanBtn">🧹 Fix All NaN</button>
+          <button class="btn primary big" id="magicBtn">✨ Magic Clean</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-num" id="kpiRows">—</div><div class="kpi-lbl">rows</div></div>
+        <div class="kpi"><div class="kpi-num" id="kpiCols">—</div><div class="kpi-lbl">columns</div></div>
+        <div class="kpi"><div class="kpi-num" id="kpiMissing">—</div><div class="kpi-lbl">missing %</div></div>
+        <div class="kpi"><div class="kpi-num" id="kpiDups">—</div><div class="kpi-lbl">duplicate rows</div></div>
+        <div class="kpi score"><div class="kpi-num"><span id="kpiScore">—</span><span class="grade" id="kpiGrade"></span></div><div class="kpi-lbl">quality score</div></div>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="card" id="suggestCard">
+        <div class="card-title">💡 Suggested next steps <span class="muted">— one click to apply</span></div>
+        <div id="suggestList" class="suggest-list"></div>
+      </div>
+
+      <!-- Graph workshop -->
+      <div class="card">
+        <div class="card-title">📊 Visualize
+          <span class="muted">— pick a chart, drag a column thumbnail into the main view</span>
+        </div>
+        <div class="viz-controls">
+          <label>Chart:
+            <select id="chartTypeSel">
+              <option value="missing">Missing-value heatmap</option>
+              <option value="issues">Column quality issues</option>
+              <option value="histogram">Histogram (single column)</option>
+              <option value="box">Box plot (single column)</option>
+              <option value="bar">Bar chart (categorical)</option>
+              <option value="scatter">Scatter (X vs Y)</option>
+              <option value="correlation">Correlation heatmap</option>
+              <option value="gauge">Quality score gauge</option>
+            </select>
+          </label>
+          <label id="colSelectWrap" hidden>Column:
+            <select id="colSel"></select>
+          </label>
+          <label id="colSelectWrapY" hidden>Y column:
+            <select id="colSelY"></select>
+          </label>
+        </div>
+        <div id="mainChart" class="chart big-chart"></div>
+        <div class="thumbs-strip">
+          <div class="muted small">Column thumbnails (drag onto chart):</div>
+          <div id="thumbs" class="thumbs"></div>
+        </div>
+      </div>
+
+      <!-- Columns -->
+      <div class="card">
+        <div class="card-title">Columns <span class="muted">— click a column to clean it</span></div>
+        <div id="columnsTable" class="cols-wrap"></div>
+      </div>
+
+      <!-- ML Prep tools -->
+      <div class="card">
+        <div class="card-title">🧪 ML Preparation tools</div>
+        <div class="mlprep-grid">
+          <button class="mlprep-btn" id="engineerBtn">
+            <div class="mlprep-icon">🧮</div>
+            <div class="mlprep-label">Engineer feature</div>
+            <div class="mlprep-sub">Create new column from formula (BMI, ratios, …)</div>
+          </button>
+          <button class="mlprep-btn" id="splitBtn">
+            <div class="mlprep-icon">✂</div>
+            <div class="mlprep-label">Train / Test split</div>
+            <div class="mlprep-sub">Stratified split + download as zip</div>
+          </button>
+          <button class="mlprep-btn" id="balanceBtn">
+            <div class="mlprep-icon">⚖</div>
+            <div class="mlprep-label">Balance classes</div>
+            <div class="mlprep-sub">SMOTE / oversample / undersample</div>
+          </button>
+          <button class="mlprep-btn" id="reduceBtn">
+            <div class="mlprep-icon">📉</div>
+            <div class="mlprep-label">Reduce features</div>
+            <div class="mlprep-sub">PCA / variance threshold / k-best</div>
+          </button>
+          <button class="mlprep-btn" id="mergeBtn">
+            <div class="mlprep-icon">🔗</div>
+            <div class="mlprep-label">Merge another CSV</div>
+            <div class="mlprep-sub">Join 2 datasets on a key (inner / outer / left / right)</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card" id="historyCard" hidden>
+        <div class="card-title">Pipeline history</div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+
+      <!-- Data preview launchers -->
+      <div class="card">
+        <div class="card-title">Data preview <span class="muted">— click a button to view rows</span></div>
+        <div class="preview-launch">
+          <button class="preview-btn" id="viewOriginalBtn">
+            <div class="preview-btn-icon">📄</div>
+            <div>
+              <div class="preview-btn-title">View original data</div>
+              <div class="preview-btn-sub" id="viewOriginalMeta">read-only · before any cleaning</div>
+            </div>
+          </button>
+          <button class="preview-btn" id="viewCurrentBtn">
+            <div class="preview-btn-icon">✨</div>
+            <div>
+              <div class="preview-btn-title">View current data</div>
+              <div class="preview-btn-sub" id="viewCurrentMeta">read-only · after applied operations</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="export-bar" id="exportBar" hidden>
+        <div>
+          <b>Your data is clean.</b> Download the cleaned CSV and the reproducible Python notebook.
+        </div>
+        <div class="dash-actions">
+          <button class="btn primary" id="downloadCsvBtn">⬇ Cleaned CSV</button>
+          <button class="btn primary" id="downloadNbBtn">⬇ Notebook (.ipynb)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== IMAGE PROFILE SCREEN ============== -->
+    <section id="screen-image-profile" class="screen">
+      <div class="dash-head">
+        <div>
+          <h2>Image Dataset Profile</h2>
+          <div id="imageDashMeta" class="muted"></div>
+        </div>
+        <div class="dash-actions">
+          <button class="btn ghost" id="imageBackToUpload">← New dataset</button>
+          <button class="btn ghost" id="imageUndoBtn" disabled>↶ Undo</button>
+          <button class="btn ghost" id="imageResetBtn" disabled>⟲ Reset</button>
+          <button class="btn primary" id="imageExportBtn">⬇ Export</button>
+          <button class="btn primary big" id="imageMagicBtn">✨ Magic Clean</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-num" id="imageKpiTotal">—</div><div class="kpi-lbl">total images</div></div>
+        <div class="kpi"><div class="kpi-num" id="imageKpiFormats">—</div><div class="kpi-lbl">formats</div></div>
+        <div class="kpi"><div class="kpi-num" id="imageKpiDims">—</div><div class="kpi-lbl">avg dimensions</div></div>
+        <div class="kpi"><div class="kpi-num" id="imageKpiDups">—</div><div class="kpi-lbl">duplicates</div></div>
+        <div class="kpi score"><div class="kpi-num"><span id="imageKpiScore">—</span><span class="grade" id="imageKpiGrade"></span></div><div class="kpi-lbl">quality score</div></div>
+      </div>
+
+      <div class="card" id="qualityIssuesCard">
+        <div class="card-title">⚠️ Quality issues</div>
+        <div id="qualityIssuesList" class="quality-issues-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🖼️ Image grid <span class="muted">— click any tile to view full resolution</span></div>
+        <div id="imageGrid" class="image-grid"></div>
+        <button class="btn ghost" id="loadMoreBtn" hidden>Load more images</button>
+      </div>
+
+      <!-- Cleaning operations card -->
+      <div class="card" id="imageCleaningCard">
+        <div class="card-title">🧹 Cleaning operations</div>
+        <div class="clean-panel">
+          <div class="clean-row">
+            <select id="imageCleanCat" class="clean-select">
+              <option value="">Select category...</option>
+              <option value="quality">Quality</option>
+              <option value="dedup">Deduplication</option>
+              <option value="transforms">Transforms</option>
+              <option value="augment">Augmentation</option>
+              <option value="pair">Pair with labels</option>
+            </select>
+            <select id="imageCleanStrat" class="clean-select" disabled>
+              <option value="">Select operation...</option>
+            </select>
+            <div id="imageCleanParams" class="clean-params"></div>
+            <button class="btn primary" id="imageCleanApply" disabled>Apply</button>
+          </div>
+          <div id="imageCleanStatus" class="clean-status muted">No operations applied yet</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== COMPARE SCREEN ============== -->
+    <section id="screen-compare" class="screen">
+      <div class="dash-head">
+        <div>
+          <h2>Before vs After</h2>
+          <div class="muted">Quantified — see exactly what CleanML changed.</div>
+        </div>
+        <div class="dash-actions">
+          <button class="btn ghost" id="backToProfile">← Back to dashboard</button>
+        </div>
+      </div>
+
+      <!-- HERO: big-number delta strip -->
+      <div class="card compare-hero" id="compareHero"></div>
+
+      <!-- Before / after dual gauges -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-title">Score · before</div>
+          <div id="chartBeforeGauge" class="chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Score · after</div>
+          <div id="chartAfterGauge" class="chart"></div>
+        </div>
+      </div>
+
+      <!-- Radar: data health on 5 dimensions -->
+      <div class="card">
+        <div class="card-title">Data health · 5-dimension radar</div>
+        <div id="chartHealthRadar" class="chart" style="min-height:380px"></div>
+      </div>
+
+      <!-- Per-column missing + ops breakdown donut -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-title">Missing % per column</div>
+          <div id="chartMissingCompare" class="chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Operations by category</div>
+          <div id="chartOpsBreakdown" class="chart"></div>
+        </div>
+      </div>
+
+      <!-- Column type counts side-by-side -->
+      <div class="card">
+        <div class="card-title">Column types · before vs after</div>
+        <div id="chartTypeCompare" class="chart"></div>
+      </div>
+
+      <!-- Operations as a vertical timeline -->
+      <div class="card">
+        <div class="card-title">Pipeline timeline</div>
+        <div id="opsTimeline" class="ops-timeline"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Data preview modal -->
+  <div id="previewModal" class="modal-backdrop" hidden>
+    <div class="modal" style="max-width:1100px">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="previewModalTitle"></div>
+          <div class="muted" id="previewModalSub"></div>
+        </div>
+        <button class="btn ghost" id="previewModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="previewModalTable" class="table-wrap big"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Merge modal -->
+  <div id="mergeModal" class="modal-backdrop" hidden>
+    <div class="modal" style="max-width:780px">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">🔗 Merge with another CSV</div>
+          <div class="muted">Pick a 2nd dataset, choose join keys, and merge.</div>
+        </div>
+        <button class="btn ghost" id="mergeModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="mergeModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ML Prep generic modal -->
+  <div id="mlpModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="mlpTitle"></div>
+          <div class="muted" id="mlpSub"></div>
+        </div>
+        <button class="btn ghost" id="mlpClose">✕</button>
+      </div>
+      <div class="modal-body" id="mlpBody"></div>
+    </div>
+  </div>
+
+  <!-- label normalizer modal -->
+  <div id="labelModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">🏷 Normalize inconsistent labels</div>
+          <div class="muted" id="labelModalSub"></div>
+        </div>
+        <button class="btn ghost" id="labelModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="labelModalBody"></div>
+    </div>
+  </div>
+
+  <!-- validation modal -->
+  <div id="validateModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">✓ Cross-field validation</div>
+          <div class="muted">Flag or drop rows that violate a rule between columns.</div>
+        </div>
+        <button class="btn ghost" id="validateModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="validateModalBody"></div>
+    </div>
+  </div>
+
+  <!-- operation preview modal -->
+  <div id="opModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="opModalTitle"></div>
+          <div class="muted" id="opModalReason"></div>
+        </div>
+        <button class="btn ghost" id="opModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="opModalBody"></div>
+    </div>
+  </div>
+
+  <!-- image export modal -->
+  <div id="imageExportModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">⬇ Export Image Dataset</div>
+          <div class="muted">Choose format and export options</div>
+        </div>
+        <button class="btn ghost" id="imageExportClose">✕</button>
+      </div>
+      <div class="modal-body" id="imageExportBody">
+        <div class="form-group">
+          <label>Export format</label>
+          <select id="imageExportFormat" class="form-control">
+            <option value="zip">ZIP archive</option>
+            <option value="numpy">NumPy array (.npy)</option>
+            <option value="pytorch">PyTorch tensors (.pt)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="imageExportLabels" />
+            Include labels (if available)
+          </label>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="imageExportSplit" />
+            Train/test split
+          </label>
+        </div>
+        <div id="imageExportSplitOptions" class="form-group" hidden>
+          <label>Test size: <span id="imageExportTestSizeVal">20%</span></label>
+          <input type="range" id="imageExportTestSize" min="5" max="50" value="20" step="5" class="form-control" />
+          <label>Target column (for stratification)</label>
+          <input type="text" id="imageExportTargetCol" class="form-control" placeholder="e.g., label" />
+        </div>
+        <div class="modal-actions">
+          <button class="btn ghost" id="imageExportCancel">Cancel</button>
+          <button class="btn primary" id="imageExportSubmit">Export</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- column action drawer -->
+  <div id="colDrawer" class="drawer" hidden>
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-col-name" id="drawerName"></div>
+        <div class="muted" id="drawerSub"></div>
+      </div>
+      <button class="btn ghost" id="drawerClose">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast" hidden></div>
+
+  <footer class="footer">
+    <span>CleanML · built with Flask, pandas, scikit-learn, Plotly.js</span>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/upload.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/image-profile.js"></script>
+  <script src="js/image-clean.js"></script>
+  <script src="js/image-export.js"></script>
+  <script src="js/plots.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/label-modal.js"></script>
+  <script src="js/validate-modal.js"></script>
+  <script src="js/mlprep.js"></script>
+  <script src="js/merge-modal.js"></script>
+  <script src="js/op-modal.js"></script>
+  <script src="js/suggest.js"></script>
+  <script src="js/drawer.js"></script>
+  <script src="js/compare.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

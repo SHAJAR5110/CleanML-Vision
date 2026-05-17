@@ -1,0 +1,11 @@
+[
+  {
+    "op": {
+      "family": "image_dedup",
+      "strategy": "compute_hashes",
+      "params": {}
+    },
+    "code": "import imagehash\nfrom PIL import Image\n\ndef compute_phash(img_path, hash_size=8):\n    try:\n        with Image.open(img_path) as img:\n            return str(imagehash.phash(img, hash_size=8))\n    except:\n        return None\n\ndf['perceptual_hash'] = df['path'].apply(lambda p: compute_phash(p, 8))\n",
+    "message": "Computed perceptual hashes for 0 images (600 failed)."
+  }
+]

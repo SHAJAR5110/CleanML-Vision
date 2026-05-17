@@ -1,0 +1,10 @@
+[
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "fill_all_smart"
+    },
+    "code": "# Standardize NaN tokens then smart-fill every column\n_nan_tokens = ['', ' ', '#n/a', '#null!', '(null)', '-', '--', '.', '?', 'missing', 'n/a', 'na', 'nan', 'none', 'null', 'unknown']\nfor _c in df.columns:\n    if df[_c].dtype == object or pd.api.types.is_string_dtype(df[_c]):\n        _norm = df[_c].astype(str).str.strip().str.lower()\n        df.loc[_norm.isin(_nan_tokens), _c] = None\ndf['Peak'] = df['Peak'].fillna(df['Peak'].mode().iloc[0] if len(df['Peak'].mode()) else 'Unknown')\ndf['All Time Peak'] = df['All Time Peak'].fillna(df['All Time Peak'].mode().iloc[0] if len(df['All Time Peak'].mode()) else 'Unknown')",
+    "message": "Smart-filled 25 missing cells across all columns."
+  }
+]

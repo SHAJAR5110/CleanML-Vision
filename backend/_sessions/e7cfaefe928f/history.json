@@ -1,0 +1,46 @@
+[
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_constants"
+    },
+    "code": "_constants = [c for c in df.columns if df[c].nunique(dropna=False) <= 1]\ndf = df.drop(columns=_constants)",
+    "message": "Dropped 4 constant column(s): ['price', 'discount', 'category', 'stock_quantity']."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "id"
+    },
+    "code": "df = df.drop(columns=['id'])",
+    "message": "Dropped column 'id'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "name"
+    },
+    "code": "df = df.drop(columns=['name'])",
+    "message": "Dropped column 'name'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "description"
+    },
+    "code": "df = df.drop(columns=['description'])",
+    "message": "Dropped column 'description'."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "images"
+    },
+    "code": "df = df.drop(columns=['images'])",
+    "message": "Dropped column 'images'."
+  }
+]

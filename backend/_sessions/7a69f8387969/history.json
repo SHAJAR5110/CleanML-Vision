@@ -1,0 +1,46 @@
+[
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "fill_all_smart"
+    },
+    "code": "# Standardize NaN tokens then smart-fill every column\n_nan_tokens = ['', ' ', '#n/a', '#null!', '(null)', '-', '--', '.', '?', 'missing', 'n/a', 'na', 'nan', 'none', 'null', 'unknown']\nfor _c in df.columns:\n    if df[_c].dtype == object or pd.api.types.is_string_dtype(df[_c]):\n        _norm = df[_c].astype(str).str.strip().str.lower()\n        df.loc[_norm.isin(_nan_tokens), _c] = None\ndf['Age'] = df['Age'].fillna(df['Age'].median())\ndf['Salary'] = df['Salary'].fillna(df['Salary'].median())\ndf['Purchased'] = df['Purchased'].fillna(df['Purchased'].mode().iloc[0] if len(df['Purchased'].mode()) else 'Unknown')",
+    "message": "Smart-filled 3 missing cells across all columns."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Country"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Country']), pd.get_dummies(df['Country'], prefix='Country', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Country' \u2192 3 columns."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "Salary"
+    },
+    "code": "_q1, _q3 = df['Salary'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Salary'] = df['Salary'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 1 IQR outliers in 'Salary' at [3.1e+04, 1.05e+05]."
+  },
+  {
+    "op": {
+      "family": "scalers",
+      "strategy": "log",
+      "column": "Salary"
+    },
+    "code": "_shift = max(0.0, -df['Salary'].min() + 1.0) if df['Salary'].min() <= 0 else 0.0\ndf['Salary'] = np.log1p(df['Salary'] + _shift)",
+    "message": "Log-transformed 'Salary' (shift=0)."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Purchased"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Purchased'] = df['Purchased'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Purchased' to boolean."
+  }
+]

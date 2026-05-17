@@ -1,0 +1,55 @@
+[
+  {
+    "op": {
+      "column": "species",
+      "family": "encoders",
+      "strategy": "onehot"
+    },
+    "code": "df = pd.concat([df.drop(columns=['species']), pd.get_dummies(df['species'], prefix='species', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'species' \u2192 3 columns."
+  },
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_rows"
+    },
+    "code": "df = df.drop_duplicates().reset_index(drop=True)",
+    "message": "Dropped 1 duplicate rows."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "sepal_width"
+    },
+    "code": "_q1, _q3 = df['sepal_width'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['sepal_width'].between(_lo, _hi) | df['sepal_width'].isna()].reset_index(drop=True)",
+    "message": "Removed 4 IQR outliers from 'sepal_width' (bounds [2.05, 4.05])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "species_setosa"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['species_setosa'] = df['species_setosa'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'species_setosa' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "species_versicolor"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['species_versicolor'] = df['species_versicolor'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'species_versicolor' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "species_virginica"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['species_virginica'] = df['species_virginica'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'species_virginica' to boolean."
+  }
+]

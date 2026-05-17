@@ -1,0 +1,11 @@
+[
+  {
+    "op": {
+      "column": "sex",
+      "family": "encoders",
+      "strategy": "onehot"
+    },
+    "code": "df = pd.concat([df.drop(columns=['sex']), pd.get_dummies(df['sex'], prefix='sex', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'sex' \u2192 2 columns."
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "op": {
+      "family": "image_transforms",
+      "strategy": "convert_color",
+      "params": {
+        "mode": "L"
+      }
+    },
+    "code": "from PIL import Image\n\ndef convert_color_mode(img_path, target_mode='L'):\n    with Image.open(img_path) as img:\n        if img.mode != target_mode:\n            converted = img.convert(target_mode)\n            converted.save(img_path, format=img.format or 'PNG')\n\n# Convert all images to L\nfor img_path in df['path']:\n    convert_color_mode(img_path, 'L')\n",
+    "message": "Converted 48 images to L mode."
+  },
+  {
+    "op": {
+      "family": "image_augment",
+      "strategy": "flip",
+      "params": {
+        "direction": "vertical"
+      }
+    },
+    "code": "from PIL import Image\n\ndef flip_augment(img_path, direction='vertical'):\n    augmented = []\n    directions = ['horizontal', 'vertical'] if direction == 'both' else [direction]\n    \n    with Image.open(img_path) as img:\n        for flip_dir in directions:\n            if flip_dir == 'horizontal':\n                flipped = img.transpose(Image.FLIP_LEFT_RIGHT)\n                suffix = 'hflip'\n            else:\n                flipped = img.transpose(Image.FLIP_TOP_BOTTOM)\n                suffix = 'vflip'\n            \n            new_path = img_path.parent / f\"{img_path.stem}_aug_{suffix}{img_path.suffix}\"\n            flipped.save(new_path, format=img.format or 'PNG')\n            augmented.append(new_path)\n    return augmented\n\n# Augment all images\nfor img_path in df['path']:\n    flip_augment(img_path, 'vertical')\n",
+    "message": "Created 48 flipped augmentations (vertical)."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_corrupt",
+      "params": {}
+    },
+    "code": "from PIL import Image\n\ndef is_valid(img_path):\n    try:\n        with Image.open(img_path) as img:\n            img.verify()\n        return True\n    except:\n        return False\n\n# Remove corrupt images\ndf = df[df['path'].apply(is_valid)].reset_index(drop=True)\n",
+    "message": "Removed 96 corrupt/unreadable images."
+  }
+]

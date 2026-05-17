@@ -1,0 +1,11 @@
+[
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_corrupt",
+      "params": {}
+    },
+    "code": "from PIL import Image\n\ndef is_valid(img_path):\n    try:\n        with Image.open(img_path) as img:\n            img.verify()\n        return True\n    except:\n        return False\n\n# Remove corrupt images\ndf = df[df['path'].apply(is_valid)].reset_index(drop=True)\n",
+    "message": "Removed 600 corrupt/unreadable images."
+  }
+]

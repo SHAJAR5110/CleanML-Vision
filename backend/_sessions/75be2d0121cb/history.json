@@ -1,0 +1,53 @@
+[
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_blurry",
+      "params": {
+        "threshold": 100
+      }
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef is_blurry(img_path, threshold=100.0):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var() < threshold\n\n# Remove blurry images\ndf = df[~df['path'].apply(lambda p: is_blurry(p, 100.0))].reset_index(drop=True)\n",
+    "message": "Removed 0 blurry images (Laplacian variance < 100.0)."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "remove_blurry",
+      "params": {
+        "threshold": 50
+      }
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef is_blurry(img_path, threshold=50.0):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var() < threshold\n\n# Remove blurry images\ndf = df[~df['path'].apply(lambda p: is_blurry(p, 50.0))].reset_index(drop=True)\n",
+    "message": "Removed 0 blurry images (Laplacian variance < 50.0)."
+  },
+  {
+    "op": {
+      "family": "image_quality",
+      "strategy": "flag_low_quality",
+      "params": {}
+    },
+    "code": "import cv2\nimport numpy as np\n\ndef compute_blur_score(img_path):\n    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)\n    laplacian = cv2.Laplacian(img, cv2.CV_64F)\n    return laplacian.var()\n\ndef check_exposure(img_path):\n    img = cv2.imread(str(img_path))\n    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    mean = gray.mean()\n    if mean < 85: return 'underexposed'\n    if mean > 170: return 'overexposed'\n    return 'ok'\n\ndf['blur_score'] = df['path'].apply(compute_blur_score)\ndf['is_blurry'] = df['blur_score'] < 100.0\ndf['exposure'] = df['path'].apply(check_exposure)\n",
+    "message": "Flagged quality: 0 blurry, 0 underexposed, 0 overexposed."
+  },
+  {
+    "op": {
+      "family": "image_dedup",
+      "strategy": "compute_hashes",
+      "params": {}
+    },
+    "code": "import imagehash\nfrom PIL import Image\n\ndef compute_phash(img_path, hash_size=8):\n    try:\n        with Image.open(img_path) as img:\n            return str(imagehash.phash(img, hash_size=8))\n    except:\n        return None\n\ndf['perceptual_hash'] = df['path'].apply(lambda p: compute_phash(p, 8))\n",
+    "message": "Computed perceptual hashes for 0 images (79 failed)."
+  },
+  {
+    "op": {
+      "family": "image_dedup",
+      "strategy": "remove_duplicates",
+      "params": {
+        "threshold": 5
+      }
+    },
+    "code": "",
+    "message": "No valid hashes to compare."
+  }
+]

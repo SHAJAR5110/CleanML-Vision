@@ -1,0 +1,92 @@
+[
+  {
+    "op": {
+      "column": "Country",
+      "family": "encoders",
+      "strategy": "onehot"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Country']), pd.get_dummies(df['Country'], prefix='Country', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Country' \u2192 3 columns."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "median",
+      "column": "Age"
+    },
+    "code": "df['Age'] = pd.to_numeric(df['Age'], errors='coerce').fillna(df['Age'].median())",
+    "message": "Filled 1 missing in 'Age' with median (38)."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "median",
+      "column": "Salary"
+    },
+    "code": "df['Salary'] = pd.to_numeric(df['Salary'], errors='coerce').fillna(df['Salary'].median())",
+    "message": "Filled 1 missing in 'Salary' with median (6.7e+04)."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_cap",
+      "column": "Salary"
+    },
+    "code": "_q1, _q3 = df['Salary'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Salary'] = df['Salary'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 1 IQR outliers in 'Salary' at [3.1e+04, 1.05e+05]."
+  },
+  {
+    "op": {
+      "family": "scalers",
+      "strategy": "log",
+      "column": "Salary"
+    },
+    "code": "_shift = max(0.0, -df['Salary'].min() + 1.0) if df['Salary'].min() <= 0 else 0.0\ndf['Salary'] = np.log1p(df['Salary'] + _shift)",
+    "message": "Log-transformed 'Salary' (shift=0)."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Purchased"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Purchased'] = df['Purchased'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Purchased' to boolean."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "mode",
+      "column": "Purchased"
+    },
+    "code": "df['Purchased'] = df['Purchased'].fillna(df['Purchased'].mode().iloc[0])",
+    "message": "Filled 1 missing in 'Purchased' with mode (True)."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Country_France"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Country_France'] = df['Country_France'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Country_France' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Country_Germany"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Country_Germany'] = df['Country_Germany'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Country_Germany' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Country_Spain"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Country_Spain'] = df['Country_Spain'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Country_Spain' to boolean."
+  }
+]

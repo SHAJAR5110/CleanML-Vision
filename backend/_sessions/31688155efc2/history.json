@@ -1,0 +1,333 @@
+[
+  {
+    "op": {
+      "column": "Age",
+      "family": "missing",
+      "strategy": "median"
+    },
+    "code": "df['Age'] = pd.to_numeric(df['Age'], errors='coerce').astype(float).fillna(df['Age'].median())",
+    "message": "Filled 177 missing in 'Age' with median (28)."
+  },
+  {
+    "op": {
+      "column": "Cabin",
+      "family": "missing",
+      "strategy": "drop_column"
+    },
+    "code": "df = df.drop(columns=['Cabin'])",
+    "message": "Dropped column 'Cabin'."
+  },
+  {
+    "op": {
+      "column": "Embarked",
+      "family": "encoders",
+      "strategy": "onehot"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Embarked']), pd.get_dummies(df['Embarked'], prefix='Embarked', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Embarked' \u2192 3 columns."
+  },
+  {
+    "op": {
+      "column": "PassengerId",
+      "family": "missing",
+      "strategy": "drop_column"
+    },
+    "code": "df = df.drop(columns=['PassengerId'])",
+    "message": "Dropped column 'PassengerId'."
+  },
+  {
+    "op": {
+      "column": "Age",
+      "family": "outliers",
+      "strategy": "iqr_cap"
+    },
+    "code": "_q1, _q3 = df['Age'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Age'] = df['Age'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 66 IQR outliers in 'Age' at [2.5, 54.5]."
+  },
+  {
+    "op": {
+      "column": "SibSp",
+      "family": "outliers",
+      "strategy": "iqr_cap"
+    },
+    "code": "_q1, _q3 = df['SibSp'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['SibSp'] = df['SibSp'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 46 IQR outliers in 'SibSp' at [-1.5, 2.5]."
+  },
+  {
+    "op": {
+      "column": "Parch",
+      "family": "scalers",
+      "strategy": "log"
+    },
+    "code": "_shift = max(0.0, -df['Parch'].min() + 1.0) if df['Parch'].min() <= 0 else 0.0\ndf['Parch'] = np.log1p(df['Parch'] + _shift)",
+    "message": "Log-transformed 'Parch' (shift=1)."
+  },
+  {
+    "op": {
+      "column": "Fare",
+      "family": "outliers",
+      "strategy": "iqr_cap"
+    },
+    "code": "_q1, _q3 = df['Fare'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Fare'] = df['Fare'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 116 IQR outliers in 'Fare' at [-26.72, 65.63]."
+  },
+  {
+    "op": {
+      "column": "Name",
+      "family": "missing",
+      "strategy": "drop_column"
+    },
+    "code": "df = df.drop(columns=['Name'])",
+    "message": "Dropped column 'Name'."
+  },
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_rows"
+    },
+    "code": "df = df.drop_duplicates().reset_index(drop=True)",
+    "message": "Dropped 17 duplicate rows."
+  },
+  {
+    "op": {
+      "column": "Fare",
+      "family": "outliers",
+      "strategy": "iqr_cap"
+    },
+    "code": "_q1, _q3 = df['Fare'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf['Fare'] = df['Fare'].clip(lower=_lo, upper=_hi)",
+    "message": "Capped 112 IQR outliers in 'Fare' at [-26.01, 64.41]."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Survived"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Survived'] = df['Survived'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Survived' to boolean."
+  },
+  {
+    "op": {
+      "family": "encoders",
+      "strategy": "onehot",
+      "column": "Sex"
+    },
+    "code": "df = pd.concat([df.drop(columns=['Sex']), pd.get_dummies(df['Sex'], prefix='Sex', drop_first=False)], axis=1)",
+    "message": "One-hot encoded 'Sex' \u2192 2 columns."
+  },
+  {
+    "op": {
+      "family": "missing",
+      "strategy": "drop_column",
+      "column": "Ticket"
+    },
+    "code": "df = df.drop(columns=['Ticket'])",
+    "message": "Dropped column 'Ticket'."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_C"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_C'] = df['Embarked_C'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_C' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_Q"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_Q'] = df['Embarked_Q'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_Q' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_S"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_S'] = df['Embarked_S'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_S' to boolean."
+  },
+  {
+    "op": {
+      "family": "duplicates",
+      "strategy": "drop_rows"
+    },
+    "code": "df = df.drop_duplicates().reset_index(drop=True)",
+    "message": "Dropped 112 duplicate rows."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Survived"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Survived'] = df['Survived'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Survived' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_C"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_C'] = df['Embarked_C'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_C' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_Q"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_Q'] = df['Embarked_Q'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_Q' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_S"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_S'] = df['Embarked_S'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_S' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Sex_female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Sex_female'] = df['Sex_female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Sex_female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Sex_male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Sex_male'] = df['Sex_male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Sex_male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Survived"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Survived'] = df['Survived'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Survived' to boolean."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "iqr_remove",
+      "column": "Parch"
+    },
+    "code": "_q1, _q3 = df['Parch'].quantile([0.25, 0.75])\n_lo, _hi = _q1 - 1.5*(_q3-_q1), _q3 + 1.5*(_q3-_q1)\ndf = df[df['Parch'].between(_lo, _hi) | df['Parch'].isna()].reset_index(drop=True)",
+    "message": "Removed 10 IQR outliers from 'Parch' (bounds [0.08495, 1.707])."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_C"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_C'] = df['Embarked_C'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_C' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_Q"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_Q'] = df['Embarked_Q'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_Q' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_S"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_S'] = df['Embarked_S'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_S' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Sex_female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Sex_female'] = df['Sex_female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Sex_female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Sex_male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Sex_male'] = df['Sex_male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Sex_male' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Survived"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Survived'] = df['Survived'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Survived' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_C"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_C'] = df['Embarked_C'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_C' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_Q"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_Q'] = df['Embarked_Q'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_Q' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Embarked_S"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Embarked_S'] = df['Embarked_S'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Embarked_S' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Sex_female"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Sex_female'] = df['Sex_female'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Sex_female' to boolean."
+  },
+  {
+    "op": {
+      "family": "dtype",
+      "strategy": "to_boolean",
+      "column": "Sex_male"
+    },
+    "code": "_map = {'true': True, 'false': False, 'yes': True, 'no': False, 'y': True, 'n': False, '1': True, '0': False, 't': True, 'f': False}\ndf['Sex_male'] = df['Sex_male'].astype('string').str.strip().str.lower().map(_map)",
+    "message": "Coerced 'Sex_male' to boolean."
+  }
+]

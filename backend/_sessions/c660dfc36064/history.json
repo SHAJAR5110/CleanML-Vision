@@ -1,0 +1,57 @@
+[
+  {
+    "op": {
+      "family": "label_norm",
+      "strategy": "normalize",
+      "column": "gender",
+      "params": {
+        "mapping": {
+          "M": "Male",
+          "male": "Male",
+          "MALE": "Male",
+          "m": "Male",
+          "F": "Female",
+          "female": "Female",
+          "FEMALE": "Female",
+          "f": "Female"
+        }
+      }
+    },
+    "code": "_map = {'M': 'Male', 'male': 'Male', 'MALE': 'Male', 'm': 'Male', 'F': 'Female', 'female': 'Female', 'FEMALE': 'Female', 'f': 'Female'}\ndf['gender'] = df['gender'].replace(_map)",
+    "message": "Normalized 8 inconsistent labels in 'gender'."
+  },
+  {
+    "op": {
+      "family": "validate",
+      "strategy": "check",
+      "params": {
+        "rule": "less_than",
+        "a": "start",
+        "b": "end"
+      }
+    },
+    "code": "# Cross-field validation 'less_than'; flags violations in '_violates_less_than'",
+    "message": "Flagged 3 rows that violate rule 'less_than' in '_violates_less_than'."
+  },
+  {
+    "op": {
+      "family": "text",
+      "strategy": "word_count",
+      "column": "city"
+    },
+    "code": "df['city_word_count'] = df['city'].astype('string').fillna('').str.split().str.len()",
+    "message": "Added word-count feature 'city_word_count' from 'city'."
+  },
+  {
+    "op": {
+      "family": "outliers",
+      "strategy": "dbscan",
+      "params": {
+        "eps": 0.8,
+        "min_samples": 3
+      }
+    },
+    "code": "from sklearn.cluster import DBSCAN\nfrom sklearn.preprocessing import StandardScaler\n_num = df.select_dtypes(include='number').columns\n_X = df[_num].fillna(df[_num].median())\n_X_scaled = StandardScaler().fit_transform(_X)\n_labels = DBSCAN(eps=0.8, min_samples=3).fit_predict(_X_scaled)\ndf = df[_labels != -1].reset_index(drop=True)",
+    "message": "DBSCAN flagged 10 anomalies (eps=0.8, min_samples=3)."
+  }
+]
